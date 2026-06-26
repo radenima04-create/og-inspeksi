@@ -1,0 +1,1133 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
+  <title>Our Garage — Inspeksi Harian</title>
+  <style>
+    :root {
+      --bg: #f0f4f8;
+      --muted: #64748b;
+      --primary: #1e3a5f;
+      --primary-light: #2a5298;
+      --ok: #16a34a;
+      --warn: #d97706;
+      --danger: #dc2626;
+      --card: #fff;
+      --input-bg: #f8fafc;
+      --border: #e5e7eb;
+      font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html, body { height: 100%; margin: 0; background: var(--bg); color: #1e293b; }
+
+    /* TOP NAV */
+    .topbar {
+      background: var(--primary);
+      padding: 12px 16px;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,.2);
+    }
+    .topbar .title { font-weight: 800; font-size: 15px; }
+    .topbar .sub { color: #94a3b8; font-size: 11px; margin-top: 2px; }
+
+    /* BOTTOM TABS */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #fff;
+      border-top: 1px solid var(--border);
+      display: flex;
+      z-index: 100;
+      box-shadow: 0 -2px 12px rgba(0,0,0,.08);
+    }
+    .bottom-nav button {
+      flex: 1;
+      padding: 10px 0 12px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 600;
+      color: #94a3b8;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      transition: color .15s;
+    }
+    .bottom-nav button .tab-icon { font-size: 20px; }
+    .bottom-nav button.active { color: var(--primary); }
+    .bottom-nav button.active .tab-icon { transform: scale(1.1); }
+
+    .wrap { max-width: 680px; margin: 0 auto; padding: 16px 14px 90px; }
+
+    /* CARDS */
+    .card {
+      background: var(--card);
+      border-radius: 14px;
+      padding: 16px;
+      box-shadow: 0 1px 6px rgba(0,0,0,.06);
+      margin-bottom: 12px;
+      border: 1px solid var(--border);
+    }
+    .card-title { font-weight: 700; font-size: 15px; color: var(--primary); margin-bottom: 12px; }
+
+    /* INPUTS */
+    .label { display: block; font-weight: 600; color: #475569; margin-bottom: 5px; font-size: 13px; }
+    .input, select, textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1.5px solid #e2e8f0;
+      font-size: 14px;
+      background: var(--input-bg);
+      outline: none;
+      color: #1e293b;
+      font-family: inherit;
+    }
+    .input:focus, select:focus, textarea:focus { border-color: var(--primary); }
+
+    /* BUTTONS */
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 16px;
+      border-radius: 12px;
+      border: 2px solid var(--primary);
+      background: var(--primary);
+      color: #fff;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 14px;
+      font-family: inherit;
+      width: 100%;
+      transition: opacity .15s;
+    }
+    .btn:disabled { opacity: .4; cursor: not-allowed; }
+    .btn.ghost { background: transparent; color: var(--primary); }
+    .btn.danger { background: var(--danger); border-color: var(--danger); }
+    .btn.small { padding: 8px 12px; font-size: 13px; border-radius: 8px; width: auto; }
+
+    /* UNIT LIST */
+    .unit-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 13px 14px;
+      border-radius: 12px;
+      border: 1.5px solid var(--border);
+      background: #fff;
+      cursor: pointer;
+      margin-bottom: 8px;
+      width: 100%;
+      text-align: left;
+      font-family: inherit;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .unit-item:active { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(30,58,95,.1); }
+    .unit-avatar {
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      background: #eef2ff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    /* PROGRESS */
+    .progress-bar { height: 6px; background: #e2e8f0; border-radius: 6px; overflow: hidden; margin-top: 8px; }
+    .progress-bar .fill { height: 100%; background: var(--primary-light); transition: width .3s; border-radius: 6px; }
+
+    /* ACCORDION */
+    .accordion { border-radius: 14px; overflow: hidden; border: 1.5px solid var(--border); margin-bottom: 10px; }
+    .accordion .acc-head {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 16px;
+      background: #f8fafc;
+      border: none;
+      cursor: pointer;
+      width: 100%;
+      font-family: inherit;
+    }
+    .accordion .acc-head .acc-title { font-weight: 700; font-size: 14px; }
+    .accordion .acc-body { background: #fff; }
+    .item-row { padding: 13px 16px; border-top: 1px solid #f1f5f9; }
+    .item-hint { font-size: 12px; color: #94a3b8; margin-top: 4px; }
+
+    /* STATUS BUTTONS */
+    .status-btns { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+    .status-btns button {
+      padding: 6px 12px;
+      border-radius: 20px;
+      border: 2px solid #e5e7eb;
+      background: #f9fafb;
+      color: #9ca3af;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: inherit;
+      transition: all .15s;
+    }
+    .status-btns button.active { font-weight: 700; }
+
+    /* PILLS */
+    .pill {
+      font-size: 11px; font-weight: 700;
+      padding: 2px 10px;
+      border-radius: 20px;
+      display: inline-block;
+    }
+
+    /* SUMMARY GRID */
+    .summary-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; }
+    .summary-tile { padding: 12px 8px; border-radius: 12px; text-align: center; }
+    @media(max-width:480px) { .summary-grid { grid-template-columns: repeat(2,1fr); } }
+
+    /* RECORD LIST */
+    .record-item {
+      border-radius: 12px;
+      border: 1.5px solid var(--border);
+      background: #fff;
+      padding: 14px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: border-color .15s;
+    }
+    .record-item:active { border-color: var(--primary); }
+    .record-header { display: flex; justify-content: space-between; align-items: flex-start; }
+    .record-unit { font-weight: 700; font-size: 14px; color: #1e293b; }
+    .record-meta { font-size: 12px; color: var(--muted); margin-top: 3px; }
+    .record-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+    .badge { font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 10px; }
+    .badge-ok { background: #f0fdf4; color: var(--ok); border: 1px solid #86efac; }
+    .badge-warn { background: #fffbeb; color: var(--warn); border: 1px solid #fcd34d; }
+    .badge-danger { background: #fef2f2; color: var(--danger); border: 1px solid #fca5a5; }
+    .badge-layak { background: #f0fdf4; color: var(--ok); border: 1px solid #86efac; }
+    .badge-tidak { background: #fef2f2; color: var(--danger); border: 1px solid #fca5a5; }
+
+    /* TABS (within record view) */
+    .tab-active { color: var(--primary); border-bottom: 2px solid var(--primary); }
+
+    /* EMPTY STATE */
+    .empty-state { text-align: center; padding: 48px 24px; color: #94a3b8; }
+    .empty-icon { font-size: 48px; margin-bottom: 12px; }
+
+    /* NOTE INPUT */
+    .note-input {
+      margin-top: 8px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1.5px solid #e2e8f0;
+      background: #fff;
+      font-size: 13px;
+      font-family: inherit;
+      width: 100%;
+      outline: none;
+    }
+
+    /* MODAL overlay for record detail */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.5);
+      z-index: 200;
+      display: flex;
+      align-items: flex-end;
+    }
+    .modal-sheet {
+      background: #fff;
+      border-radius: 20px 20px 0 0;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 20px 16px 40px;
+      animation: slideUp .2s ease;
+    }
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    .modal-handle { width: 40px; height: 4px; background: #e5e7eb; border-radius: 4px; margin: 0 auto 16px; }
+
+    /* date filter bar */
+    .filter-bar { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 12px; }
+    .filter-bar::-webkit-scrollbar { display: none; }
+    .filter-chip {
+      flex-shrink: 0;
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1.5px solid var(--border);
+      background: #fff;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .filter-chip.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+    small { font-size: 11px; color: #94a3b8; }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>
+    <div class="title">🚗 Our Garage — Inspeksi Harian</div>
+    <div class="sub" id="top-date"></div>
+  </div>
+  <div style="color:#fff; font-weight:700; font-size:14px" id="top-time"></div>
+</div>
+
+<div id="app" class="wrap"></div>
+
+<nav class="bottom-nav" id="bottom-nav">
+  <button id="tab-inspeksi" class="active" onclick="switchTab('inspeksi')">
+    <span class="tab-icon">🔍</span>Inspeksi
+  </button>
+  <button id="tab-record" onclick="switchTab('record')">
+    <span class="tab-icon">📋</span>Record Harian
+  </button>
+</nav>
+
+<script>
+// ─────────── DATA ───────────
+const UNITS = [
+  { polisi:"DK 1725 OY", label:"Ayla (Abu-Abu)" },
+  { polisi:"DK 1929 OI", label:"Ayla MT (Putih)" },
+  { polisi:"B 1080 TZT",  label:"Mirage (Merah)" },
+  { polisi:"DK 1963 XK",  label:"Brio Satya (Abu-Abu)" },
+  { polisi:"B 2647 SBK",  label:"Outlander (Putih)" },
+  { polisi:"DK 1008 AH",  label:"Avanza Grand (Abu-Abu)" },
+  { polisi:"L 1156 BM",   label:"HRV Prestige (Abu-Abu)" },
+  { polisi:"B 1300 URR",  label:"Yaris S (Silver)" },
+  { polisi:"DK 1950 FV",  label:"Yaris M (Merah)" },
+  { polisi:"DK 1835 FBZ", label:"Brio Satya I (Abu-Abu)" },
+  { polisi:"T 1875 UC",   label:"Brio Satya T (Abu-Abu)" },
+  { polisi:"DK 1162 ABY", label:"Brio Satya P (Putih)" },
+  { polisi:"DK 1510 ACQ", label:"Brio Facelift L (Lime)" },
+  { polisi:"DK 1579 ACZ", label:"Brio Facelift M (Merah)" },
+  { polisi:"DK 1759 ACL", label:"Rocky S (Silver)" },
+  { polisi:"DK 1328 ABZ", label:"Rocky K (Kuning)" },
+  { polisi:"DK 1587 ACE", label:"Rocky H (Hitam)" },
+  { polisi:"DK 1064 ACM", label:"Rocky AB (Abu-Abu)" },
+  { polisi:"DK 1179 FBP", label:"Ayla New I (Putih)" },
+  { polisi:"DK 1238 ACY", label:"Ayla New B (Hitam)" },
+  { polisi:"DK 1363 ADP", label:"Ayla New F (Merah)" },
+  { polisi:"DK 1299 ADP", label:"Ayla New BY (Putih)" },
+  { polisi:"DK 1362 ADP", label:"Ayla New BM (Hitam)" },
+  { polisi:"DK 1426 ACL", label:"Stargazer P (Putih)" },
+  { polisi:"DK 1428 ACL", label:"Stargazer S (Abu-Abu)" },
+  { polisi:"DK 1553 ACO", label:"Stargazer PN (Putih)" },
+  { polisi:"DK 1036 FCR", label:"Stargazer Essential H (Hitam)" },
+  { polisi:"DK 1578 ACG", label:"Terios P (Putih)" },
+  { polisi:"DK 1668 ABY", label:"Terios H (Hitam)" },
+  { polisi:"DK 1237 ACB", label:"Ertiga P (Putih)" },
+  { polisi:"DK 1609 ACB", label:"Ertiga H (Hitam)" },
+  { polisi:"B 1829 COU",  label:"Xpander Ultimate (Abu-Abu)" },
+  { polisi:"DK 1136 ABZ", label:"Xenia New (Putih)" },
+  { polisi:"DK 1465 AND", label:"Innova Zenix Hybrid (Hitam)" },
+  { polisi:"B 2099 TZB",  label:"Innova Reborn (Hitam)" },
+  { polisi:"DK 1843 ADE", label:"Creta Prime P (Putih)" },
+  { polisi:"DK 1499 ADU", label:"Creta Prime H (Hitam)" },
+  { polisi:"DK 1580 ADA", label:"Pajero Sport Dakar (Putih)" },
+  { polisi:"L 70 LEN",    label:"Mini Cooper S Cabrio (Biru)" },
+  { polisi:"DK 4985 FCQ", label:"Vespa B" },
+  { polisi:"DK 3454 FCP", label:"Vespa Primavera I (Hijau)" },
+  { polisi:"DK 3746 ACT", label:"Vespa K (Kuning)" },
+  { polisi:"DK 6077 FCR", label:"PCX (Hitam)" },
+  { polisi:"DK 3484 ADZ", label:"Fazzio T (Hijau)" },
+  { polisi:"DK 3485 ADZ", label:"Fazzio BM (Biru)" },
+  { polisi:"DK 4604 ADZ", label:"Fazzio O (Orange)" },
+  { polisi:"DK 4606 ADZ", label:"Fazzio P (Putih)" },
+  { polisi:"DK 2971 AEG", label:"NMAX A (Hijau)" },
+  { polisi:"DK 5232 AEF", label:"NMAX BY (Merah)" },
+  { polisi:"DK 5233 AEF", label:"NMAX F" },
+  { polisi:"DK 2077 AET", label:"Fazzio E (Perak)" },
+  { polisi:"DK 3400 FCW", label:"Fazzio D (Merah)" },
+  { polisi:"DK 4355 RF",  label:"NMAX ARK" },
+];
+
+const CHECKLIST = [
+  { id:"mesin", icon:"⚙️", label:"Mesin & Pelumas", items:[
+    { id:"oli",        label:"Oli Mesin",              hint:"Level MIN–MAX; warna coklat keemasan (bukan hitam pekat)" },
+    { id:"coolant",    label:"Coolant / Air Radiator",  hint:"Level LOW–FULL; warna tidak keruh atau berkarat" },
+    { id:"minyak_rem", label:"Minyak Rem",              hint:"Level MIN–MAX; warna kuning jernih" },
+    { id:"aki",        label:"Aki / Baterai",           hint:"Terminal bersih, tidak ada korosi, starter normal" },
+    { id:"belt",       label:"Fan Belt",                hint:"Tidak retak, tidak longgar, tidak berderit" },
+    { id:"bocor",      label:"Kebocoran Cairan",        hint:"Tidak ada tetesan di bawah kendaraan" },
+    { id:"air_wiper",  label:"Air Wiper",               hint:"Reservoir terisi min 50%; semprotan berfungsi" },
+  ]},
+  { id:"ban", icon:"🔵", label:"Ban & Roda", items:[
+    { id:"ban_kiri_dpn",  label:"Tekanan Ban Kiri Depan",    hint:"30–35 PSI (cek stiker pintu)" },
+    { id:"ban_kanan_dpn", label:"Tekanan Ban Kanan Depan",   hint:"30–35 PSI" },
+    { id:"ban_kiri_blk",  label:"Tekanan Ban Kiri Belakang", hint:"30–35 PSI" },
+    { id:"ban_kanan_blk", label:"Tekanan Ban Kanan Belakang",hint:"30–35 PSI" },
+    { id:"ban_serep",     label:"Ban Serep",                 hint:"Min 35 PSI" },
+    { id:"tapak_ban",     label:"Tapak Ban (Tread Depth)",   hint:"Min 1.6mm; ideal >3mm. Jika tipis → URGENT" },
+    { id:"fisik_ban",     label:"Fisik Ban",                 hint:"Tidak retak dinding, tidak menonjol, tidak bocor" },
+    { id:"velg",          label:"Velg & Baut Roda",          hint:"Tidak bengkok, tidak retak, baut lengkap & kencang" },
+  ]},
+  { id:"rem", icon:"🛑", label:"Sistem Rem", items:[
+    { id:"rem_depan",  label:"Rem Depan",    hint:"Tidak bunyi decit; pedal tidak ambles" },
+    { id:"rem_blkng",  label:"Rem Belakang", hint:"Pakem; kampas tidak habis" },
+    { id:"handbrake",  label:"Rem Parkir",   hint:"Menahan di tanjakan; max 7 klik" },
+  ]},
+  { id:"eksterior", icon:"💡", label:"Eksterior & Lampu", items:[
+    { id:"lampu_dpn",  label:"Lampu Depan",           hint:"Low & high beam menyala normal" },
+    { id:"lampu_blk",  label:"Lampu Belakang & Rem",  hint:"Aktif saat pedal rem ditekan" },
+    { id:"sein",       label:"Sein & Hazard",          hint:"Kiri-kanan berfungsi; tidak terlalu cepat" },
+    { id:"lampu_mdr",  label:"Lampu Mundur",           hint:"Menyala saat posisi R" },
+    { id:"kaca_dpn",   label:"Kaca Depan & Wiper",     hint:"Tidak retak; wiper menyapu bersih" },
+    { id:"spion",      label:"Kaca Spion",             hint:"Tidak retak; bisa diatur" },
+    { id:"bodi",       label:"Kondisi Bodi",           hint:"Tidak ada goresan/penyok baru dari penyewa" },
+    { id:"pintu",      label:"Pintu & Kunci",          hint:"Semua pintu menutup rapat; central lock OK" },
+  ]},
+  { id:"interior", icon:"❄️", label:"Interior & AC", items:[
+    { id:"ac",         label:"AC — Suhu & Hembusan",    hint:"Terasa dingin; semua speed blower OK" },
+    { id:"kisi_ac",    label:"Kisi-kisi AC",            hint:"Tidak patah; bisa diarahkan" },
+    { id:"dashboard",  label:"Dashboard & Warning Lamp", hint:"Tidak ada lampu peringatan menyala (CEL, ABS, dll)" },
+    { id:"sabuk",      label:"Sabuk Pengaman",           hint:"Semua baris; klik lancar; tidak robek" },
+    { id:"klakson",    label:"Klakson",                  hint:"Berbunyi normal" },
+    { id:"p3k",        label:"Kotak P3K",               hint:"Tersedia & lengkap di dalam mobil" },
+    { id:"stnk",       label:"STNK di Kendaraan",       hint:"Ada & valid (tidak expired)" },
+  ]},
+  { id:"bbm", icon:"⛽", label:"Bahan Bakar", items:[
+    { id:"level_bbm",  label:"Level BBM",               hint:"Min 1/4 tangki sebelum diserahkan ke penyewa" },
+    { id:"tipe_bbm",   label:"Tipe BBM Sesuai Unit",    hint:"Pertalite / Pertamax / Solar / Pertamax Turbo" },
+    { id:"bocor_bbm",  label:"Kebocoran Tangki/Selang", hint:"Tidak ada bau BBM; visual bawah kendaraan bersih" },
+  ]},
+];
+
+const STATUS_CFG = {
+  OK:        { color:"#16a34a", bg:"#f0fdf4", border:"#86efac" },
+  PERHATIAN: { color:"#d97706", bg:"#fffbeb", border:"#fcd34d" },
+  URGENT:    { color:"#dc2626", bg:"#fef2f2", border:"#fca5a5" },
+};
+
+// ─────────── STATE ───────────
+let activeTab = 'inspeksi'; // inspeksi | record
+let inspState = {
+  step: "select", // select | form | result
+  unit: null,
+  inspektor: "",
+  km: "",
+  shift: "Pagi",
+  expanded: "mesin",
+  results: {},
+  catNotes: {},
+  layak: null,
+  searchQ: "",
+};
+
+// Record state
+let recordState = {
+  filterDate: 'all', // 'all' | dateStr
+  viewRecord: null,  // record object currently being viewed in modal
+};
+
+// ─────────── LOCAL STORAGE ───────────
+const LS_KEY = 'og_inspeksi_records';
+
+function getRecords() {
+  try { return JSON.parse(localStorage.getItem(LS_KEY) || '[]'); }
+  catch(e) { return []; }
+}
+
+function saveRecord(record) {
+  const records = getRecords();
+  records.unshift(record); // newest first
+  localStorage.setItem(LS_KEY, JSON.stringify(records));
+}
+
+function deleteRecord(id) {
+  const records = getRecords().filter(r => r.id !== id);
+  localStorage.setItem(LS_KEY, JSON.stringify(records));
+}
+
+// ─────────── UTILS ───────────
+function today() {
+  return new Date().toLocaleDateString("id-ID", { day:"2-digit", month:"long", year:"numeric" });
+}
+function todayKey() {
+  return new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+}
+function nowTime() {
+  return new Date().toLocaleTimeString("id-ID", { hour:"2-digit", minute:"2-digit" });
+}
+function el(tag, cls, html) {
+  const e = document.createElement(tag);
+  if(cls) e.className = cls;
+  if(html !== undefined) e.innerHTML = html;
+  return e;
+}
+function isMoto(u) {
+  const p = u.polisi;
+  return p.startsWith("DK 3") || p.startsWith("DK 4") || p.startsWith("DK 5") ||
+         p.startsWith("DK 6") || p.startsWith("DK 2971");
+}
+function filteredUnits() {
+  const q = inspState.searchQ.trim().toLowerCase();
+  if(!q) return UNITS;
+  return UNITS.filter(u => u.polisi.toLowerCase().includes(q) || u.label.toLowerCase().includes(q));
+}
+function totalItems() { return CHECKLIST.reduce((a,c) => a+c.items.length, 0); }
+function filledItems() { return Object.keys(inspState.results).length; }
+function urgentItems() { return CHECKLIST.flatMap(c=>c.items).filter(i=>inspState.results[i.id]==="URGENT"); }
+function perhatianItems() { return CHECKLIST.flatMap(c=>c.items).filter(i=>inspState.results[i.id]==="PERHATIAN"); }
+function progress() { return Math.round((filledItems()/totalItems())*100)||0; }
+
+function setInspState(part) { inspState = {...inspState, ...part}; render(); }
+function setResult(itemId, val) {
+  inspState.results = {...inspState.results};
+  if(val) inspState.results[itemId] = val;
+  else delete inspState.results[itemId];
+  render();
+}
+function setCatNote(catId, key, val) {
+  inspState.catNotes = {...inspState.catNotes};
+  inspState.catNotes[catId] = {...(inspState.catNotes[catId]||{})};
+  inspState.catNotes[catId][key] = val;
+  // no re-render to avoid focus loss
+}
+function resetInspForm() {
+  inspState = { step:"select", unit:null, inspektor:"", km:"", shift:"Pagi", expanded:"mesin", results:{}, catNotes:{}, layak:null, searchQ:"" };
+  render();
+}
+
+// ─────────── TAB SWITCHING ───────────
+function switchTab(tab) {
+  activeTab = tab;
+  document.querySelectorAll('.bottom-nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  render();
+}
+
+// ─────────── SUBMIT ───────────
+function submitForm() {
+  if(!inspState.inspektor) { alert("Nama inspektor wajib diisi."); return; }
+  if(!inspState.layak) { alert("Pilih status kelayakan unit dulu ya."); return; }
+
+  const okCount = Object.values(inspState.results).filter(v=>v==='OK').length;
+  const record = {
+    id: Date.now().toString(),
+    dateKey: todayKey(),
+    date: today(),
+    time: nowTime(),
+    unit: inspState.unit,
+    inspektor: inspState.inspektor,
+    shift: inspState.shift,
+    km: inspState.km,
+    layak: inspState.layak,
+    results: {...inspState.results},
+    catNotes: JSON.parse(JSON.stringify(inspState.catNotes)),
+    okCount,
+    perhatianCount: perhatianItems().length,
+    urgentCount: urgentItems().length,
+    urgentList: urgentItems().map(i=>i.label),
+    perhatianList: perhatianItems().map(i=>i.label),
+  };
+  saveRecord(record);
+
+  inspState.step = "result";
+  inspState._savedRecord = record;
+  render();
+}
+
+function generateCSV(record) {
+  const r = record || inspState._savedRecord;
+  const rows = [
+    ["INSPEKSI HARIAN — OUR GARAGE INDONESIA GROUP"],
+    [`Tanggal,${r.date}`],
+    [`Waktu,${r.time}`],
+    [`Unit,${r.unit.polisi} — ${r.unit.label}`],
+    [`Inspektor,${r.inspektor}`],
+    [`Shift,${r.shift}`],
+    [`KM Odometer,${r.km}`],
+    [`Kelayakan,${r.layak === "layak" ? "✅ LAYAK" : "❌ TIDAK LAYAK"}`],
+    [""],
+    ["Kategori,Item Inspeksi,Status,Catatan"],
+  ];
+  CHECKLIST.forEach(cat=>{
+    cat.items.forEach(item=>{
+      const status = r.results[item.id] || "BELUM DICEK";
+      const note = (r.catNotes[cat.id]||{})[item.id]||"";
+      rows.push([`"${cat.label}"`,`"${item.label}"`,status,`"${note}"`]);
+    });
+  });
+  rows.push([""],["URGENT", `"${r.urgentList.join("; ")}"`]);
+  rows.push(["PERHATIAN",`"${r.perhatianList.join("; ")}"`]);
+  return rows.map(r=>r.join(",")).join("\n");
+}
+
+function handleCopyCSV(record) {
+  const text = generateCSV(record);
+  navigator.clipboard.writeText(text).then(()=> alert("Data berhasil dicopy! Paste ke Google Sheets.")).catch(()=>{
+    // fallback
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    alert("Data berhasil dicopy!");
+  });
+}
+
+// ─────────── RENDER: SELECT UNIT ───────────
+function renderSelect() {
+  const wrap = el('div');
+
+  const card = el('div','card');
+  card.innerHTML = '<div class="card-title">Pilih Unit Kendaraan</div><div style="font-size:13px;color:var(--muted);margin-bottom:12px">Ketik nomor polisi atau nama model</div>';
+  const input = el('input');
+  input.className = 'input';
+  input.placeholder = 'Cari: DK 1587 atau Rocky...';
+  input.value = inspState.searchQ;
+  input.oninput = e => setInspState({searchQ: e.target.value});
+  card.appendChild(input);
+  wrap.appendChild(card);
+
+  const listWrap = el('div');
+  const units = filteredUnits();
+
+  if(units.length===0) {
+    const notFound = el('div','empty-state');
+    notFound.innerHTML = '<div class="empty-icon">🔍</div><div>Unit tidak ditemukan.<br>Coba kata kunci lain.</div>';
+    listWrap.appendChild(notFound);
+  } else {
+    units.forEach(u => {
+      const btn = el('button','unit-item');
+      btn.onclick = () => setInspState({unit:u, step:'form'});
+      const avatar = el('div','unit-avatar', isMoto(u) ? "🛵" : "🚗");
+      const info = el('div',null,`<div style="font-weight:700;font-size:14px;color:#1e293b">${u.polisi}</div><div style="font-size:12px;color:var(--muted);margin-top:2px">${u.label}</div>`);
+      btn.appendChild(avatar); btn.appendChild(info);
+      listWrap.appendChild(btn);
+    });
+  }
+  wrap.appendChild(listWrap);
+  return wrap;
+}
+
+// ─────────── RENDER: FORM ───────────
+function renderForm() {
+  const root = el('div');
+
+  // Header card
+  const header = el('div','card');
+  header.style.display='flex'; header.style.justifyContent='space-between'; header.style.alignItems='center';
+  const hInfo = el('div');
+  hInfo.innerHTML = `<div style="font-weight:700;font-size:15px;color:var(--primary)">${inspState.unit.polisi}</div><div style="font-size:13px;color:var(--muted)">${inspState.unit.label} · ${today()}</div>`;
+  const closeBtn = el('button');
+  closeBtn.textContent = '✕'; closeBtn.style.cssText='background:transparent;border:none;color:#94a3b8;font-size:20px;cursor:pointer;padding:4px;line-height:1';
+  closeBtn.onclick = resetInspForm;
+  header.appendChild(hInfo); header.appendChild(closeBtn);
+
+  const progWrap = el('div','progress-bar');
+  const fill = el('div','fill'); fill.style.width = progress()+'%';
+  progWrap.appendChild(fill);
+  header.appendChild(progWrap);
+  root.appendChild(header);
+
+  // Info card
+  const infoCard = el('div','card');
+  infoCard.innerHTML = '<div class="card-title">📋 Info Inspeksi</div>';
+  const grid = el('div'); grid.style.cssText='display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px';
+
+  const nameWrap = el('div');
+  const lab = el('label','label'); lab.textContent='Nama Inspektor';
+  const inp = el('input','input'); inp.placeholder='Nama teknisi'; inp.value=inspState.inspektor;
+  inp.oninput = e => { inspState.inspektor=e.target.value; };
+  nameWrap.appendChild(lab); nameWrap.appendChild(inp);
+
+  const shiftWrap = el('div');
+  const lab2 = el('label','label'); lab2.textContent='Shift';
+  const sel = el('select','input');
+  ['Pagi','Siang','Malam'].forEach(s=>{
+    const opt = document.createElement('option'); opt.textContent=s; opt.value=s;
+    if(s===inspState.shift) opt.selected=true;
+    sel.appendChild(opt);
+  });
+  sel.onchange = e => { inspState.shift=e.target.value; };
+  shiftWrap.appendChild(lab2); shiftWrap.appendChild(sel);
+
+  grid.appendChild(nameWrap); grid.appendChild(shiftWrap);
+  infoCard.appendChild(grid);
+
+  const kmLab = el('label','label'); kmLab.textContent='KM Odometer Saat Ini';
+  const kmInp = el('input','input'); kmInp.type='number'; kmInp.placeholder='contoh: 47500'; kmInp.value=inspState.km;
+  kmInp.oninput = e => { inspState.km=e.target.value; };
+  infoCard.appendChild(kmLab); infoCard.appendChild(kmInp);
+  root.appendChild(infoCard);
+
+  // Progress summary bar
+  const summaryCard = el('div','card');
+  summaryCard.style.cssText='background:var(--primary);color:#fff;display:flex;justify-content:space-around;text-align:center;';
+  summaryCard.innerHTML=`
+    <div><div style="font-size:20px;font-weight:800">${progress()}%</div><div style="font-size:11px;color:#94a3b8;margin-top:4px">Progress</div></div>
+    <div><div style="font-size:20px;font-weight:800;color:#4ade80">${filledItems()}</div><div style="font-size:11px;color:#94a3b8;margin-top:4px">Terisi</div></div>
+    <div><div style="font-size:20px;font-weight:800;color:#fbbf24">${perhatianItems().length}</div><div style="font-size:11px;color:#94a3b8;margin-top:4px">Perhatian</div></div>
+    <div><div style="font-size:20px;font-weight:800;color:#f87171">${urgentItems().length}</div><div style="font-size:11px;color:#94a3b8;margin-top:4px">Urgent</div></div>`;
+  root.appendChild(summaryCard);
+
+  // Accordion checklist
+  CHECKLIST.forEach(cat=>{
+    const acc = el('div','accordion');
+    const head = el('button','acc-head');
+    head.style.width='100%';
+    const items = cat.items;
+    const filled = items.filter(i=>inspState.results[i.id]).length;
+    const hasUrg = items.some(i=>inspState.results[i.id]==="URGENT");
+    const hasPer = items.some(i=>inspState.results[i.id]==="PERHATIAN");
+    const dotColor = hasUrg?'var(--danger)':hasPer?'var(--warn)':(filled===items.length?'var(--ok)':'#9ca3af');
+    head.innerHTML=`<span style="font-size:22px">${cat.icon}</span>
+      <div style="flex:1;text-align:left">
+        <div class="acc-title">${cat.label}</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px">${filled}/${items.length} item selesai</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:10px;height:10px;border-radius:50%;background:${dotColor}"></div>
+        <div style="font-size:16px">${inspState.expanded===cat.id?'▲':'▼'}</div>
+      </div>`;
+    head.onclick = () => setInspState({expanded: inspState.expanded===cat.id ? null : cat.id});
+    acc.appendChild(head);
+
+    if(inspState.expanded===cat.id){
+      const body = el('div','acc-body');
+      cat.items.forEach(item=>{
+        const val = inspState.results[item.id]||null;
+        const cfg = val ? STATUS_CFG[val] : null;
+        const row = el('div','item-row');
+
+        const left = el('div');
+        left.innerHTML=`<div style="font-weight:600;font-size:14px;color:#1e293b">${item.label}</div><div class="item-hint">${item.hint}</div>`;
+        const right = el('div');
+        if(cfg){
+          const pill = el('span','pill');
+          pill.textContent=(val==='OK'?'✅ ':val==='PERHATIAN'?'⚠️ ':'🚨 ')+val;
+          pill.style.cssText=`background:${cfg.bg};color:${cfg.color};border:1px solid ${cfg.border}`;
+          right.appendChild(pill);
+        } else {
+          right.innerHTML='<span style="font-size:11px;color:#cbd5e1">—</span>';
+        }
+
+        const topRow = el('div'); topRow.style.cssText='display:flex;justify-content:space-between;align-items:flex-start;';
+        topRow.appendChild(left); topRow.appendChild(right);
+        row.appendChild(topRow);
+
+        // Status buttons
+        const badgeWrap = el('div','status-btns');
+        ['OK','PERHATIAN','URGENT'].forEach(k=>{
+          const b = el('button');
+          b.textContent=(k==='OK'?'✅ ':k==='PERHATIAN'?'⚠️ ':'🚨 ')+k;
+          b.onclick=()=>{
+            setResult(item.id, inspState.results[item.id]===k?null:k);
+          };
+          if(inspState.results[item.id]===k){
+            b.classList.add('active');
+            b.style.borderColor=STATUS_CFG[k].color;
+            b.style.background=STATUS_CFG[k].bg;
+            b.style.color=STATUS_CFG[k].color;
+          }
+          badgeWrap.appendChild(b);
+        });
+        row.appendChild(badgeWrap);
+
+        // Note input if PERHATIAN or URGENT
+        if(inspState.results[item.id]==="PERHATIAN"||inspState.results[item.id]==="URGENT"){
+          const note = el('input','note-input');
+          note.placeholder='Tulis detail masalah...';
+          note.value=(inspState.catNotes[cat.id]||{})[item.id]||"";
+          note.oninput = e => setCatNote(cat.id, item.id, e.target.value);
+          row.appendChild(note);
+        }
+
+        body.appendChild(row);
+      });
+
+      // Category note
+      const noteWrap = el('div'); noteWrap.style.padding='12px 16px 0';
+      const ta = el('textarea','input'); ta.rows=2;
+      ta.placeholder=`Catatan tambahan ${cat.label} (opsional)...`;
+      ta.value=(inspState.catNotes[cat.id]||{})['_cat']||"";
+      ta.oninput = e => setCatNote(cat.id, '_cat', e.target.value);
+      noteWrap.appendChild(ta);
+      body.appendChild(noteWrap);
+
+      acc.appendChild(body);
+    }
+    root.appendChild(acc);
+  });
+
+  // Kelayakan
+  const layakCard = el('div','card');
+  layakCard.innerHTML='<div class="card-title">🏁 Status Kelayakan Unit</div>';
+  const layGrid = el('div'); layGrid.style.cssText='display:grid;grid-template-columns:1fr 1fr;gap:10px';
+  const mkLayBtn = (val, icon, label) => {
+    const b = el('button');
+    const isActive = inspState.layak===val;
+    const col = val==='layak' ? 'var(--ok)' : 'var(--danger)';
+    const bg = val==='layak' ? '#f0fdf4' : '#fef2f2';
+    b.innerHTML=`${icon}<br><span style="font-size:13px;font-weight:700">${label}</span>`;
+    b.style.cssText=`padding:16px;border-radius:12px;border:2.5px solid ${isActive?col:'#e2e8f0'};background:${isActive?bg:'#f8fafc'};color:${isActive?col:'#94a3b8'};cursor:pointer;font-family:inherit;font-size:20px;`;
+    b.onclick = () => setInspState({layak:val});
+    return b;
+  };
+  layGrid.appendChild(mkLayBtn('layak','✅','LAYAK'));
+  layGrid.appendChild(mkLayBtn('tidak','❌','TIDAK LAYAK'));
+  layakCard.appendChild(layGrid);
+  root.appendChild(layakCard);
+
+  // Submit
+  const canSubmit = filledItems()>0 && inspState.inspektor && inspState.layak;
+  const submitBtn = el('button','btn');
+  submitBtn.textContent='Simpan & Lihat Rekap →';
+  submitBtn.style.cssText='font-size:16px;padding:16px;';
+  submitBtn.disabled = !canSubmit;
+  submitBtn.onclick = submitForm;
+  root.appendChild(submitBtn);
+
+  const foot = el('div');
+  foot.style.cssText='text-align:center;font-size:12px;color:#94a3b8;margin-top:8px;padding-bottom:8px;';
+  const msgs = [];
+  if(filledItems()<totalItems()) msgs.push(`Masih ${totalItems()-filledItems()} item belum dicek`);
+  if(!inspState.inspektor) msgs.push('Nama inspektor wajib diisi');
+  if(!inspState.layak) msgs.push('Status kelayakan belum dipilih');
+  foot.textContent = msgs.join(' · ');
+  root.appendChild(foot);
+
+  return root;
+}
+
+// ─────────── RENDER: RESULT ───────────
+function renderResult() {
+  const record = inspState._savedRecord;
+  const root = el('div');
+
+  const headerCard = el('div','card');
+  headerCard.innerHTML=`<div style="font-weight:800;font-size:18px">📄 Rekap Inspeksi</div><div style="font-size:12px;color:var(--muted);margin-top:6px">${record.unit.polisi} · ${record.date} · ${record.time}</div>`;
+  root.appendChild(headerCard);
+
+  // Status card
+  const stCard = el('div','card');
+  stCard.style.cssText=`text-align:center;border:2px solid ${record.layak==='layak'?'#86efac':'#fca5a5'};background:${record.layak==='layak'?'#f0fdf4':'#fef2f2'}`;
+  stCard.innerHTML=`
+    <div style="font-size:48px">${record.layak==='layak'?'✅':'❌'}</div>
+    <div style="font-weight:800;font-size:20px;color:${record.layak==='layak'?'var(--ok)':'var(--danger)'};margin-top:8px">${record.layak==='layak'?'UNIT LAYAK JALAN':'UNIT TIDAK LAYAK'}</div>
+    <div style="font-size:13px;color:var(--muted);margin-top:6px">${record.unit.polisi} — ${record.unit.label}</div>
+    <div style="font-size:12px;color:#94a3b8;margin-top:4px">${record.inspektor} · Shift ${record.shift}${record.km?' · KM '+Number(record.km).toLocaleString('id-ID'):''}</div>`;
+  root.appendChild(stCard);
+
+  // Summary grid
+  const sumGrid = el('div','summary-grid'); sumGrid.style.marginBottom='12px';
+  [{label:'OK',count:record.okCount,color:'#16a34a',bg:'#f0fdf4'},{label:'PERHATIAN',count:record.perhatianCount,color:'#d97706',bg:'#fffbeb'},{label:'URGENT',count:record.urgentCount,color:'#dc2626',bg:'#fef2f2'}].forEach(s=>{
+    const t = el('div','summary-tile');
+    t.style.cssText=`background:${s.bg};border:1.5px solid ${s.color}22`;
+    t.innerHTML=`<div style="font-size:26px;font-weight:800;color:${s.color}">${s.count}</div><div style="font-size:10px;font-weight:600;color:${s.color};letter-spacing:.5px">${s.label}</div>`;
+    sumGrid.appendChild(t);
+  });
+  root.appendChild(sumGrid);
+
+  // Urgent list
+  if(record.urgentCount>0){
+    const uc = el('div','card'); uc.style.cssText='background:#fef2f2;border:1.5px solid #fca5a5';
+    uc.innerHTML=`<div style="font-weight:700;font-size:14px;color:var(--danger);margin-bottom:8px">🚨 Item URGENT — Segera Tangani</div>`;
+    record.urgentList.forEach(label=>{
+      const row = el('div'); row.style.cssText='padding:6px 0;border-bottom:1px solid #fecaca;font-size:13px;font-weight:600';
+      row.textContent='• '+label;
+      uc.appendChild(row);
+    });
+    root.appendChild(uc);
+  }
+
+  // Perhatian list
+  if(record.perhatianCount>0){
+    const pc = el('div','card'); pc.style.cssText='background:#fffbeb;border:1.5px solid #fcd34d';
+    pc.innerHTML=`<div style="font-weight:700;font-size:14px;color:var(--warn);margin-bottom:8px">⚠️ Item PERHATIAN — Monitor</div>`;
+    record.perhatianList.forEach(label=>{
+      const row = el('div'); row.style.cssText='padding:6px 0;border-bottom:1px solid #fde68a;font-size:13px;font-weight:600';
+      row.textContent='• '+label;
+      pc.appendChild(row);
+    });
+    root.appendChild(pc);
+  }
+
+  // Full detail
+  const detail = el('div','card');
+  detail.innerHTML='<div style="font-weight:700;font-size:14px;margin-bottom:12px;color:var(--primary)">📋 Semua Item Inspeksi</div>';
+  CHECKLIST.forEach(cat=>{
+    const catWrap = el('div'); catWrap.style.marginBottom='14px';
+    catWrap.innerHTML=`<div style="font-weight:700;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">${cat.icon} ${cat.label}</div>`;
+    cat.items.forEach(item=>{
+      const val = record.results[item.id];
+      const cfg = val ? STATUS_CFG[val] : null;
+      const row = el('div'); row.style.cssText='display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f1f5f9';
+      const left = el('span',null,item.label); left.style.cssText='font-size:13px;color:#334155';
+      const right = el('span');
+      if(cfg){
+        right.textContent=(val==='OK'?'✅ ':'⚠️ ')+val;
+        right.style.cssText=`font-size:11px;font-weight:700;color:${cfg.color};background:${cfg.bg};padding:2px 10px;border-radius:12px;border:1px solid ${cfg.border}`;
+      } else {
+        right.textContent='—'; right.style.color='#cbd5e1';
+      }
+      row.appendChild(left); row.appendChild(right);
+      catWrap.appendChild(row);
+    });
+    detail.appendChild(catWrap);
+  });
+  root.appendChild(detail);
+
+  // Actions
+  const actWrap = el('div'); actWrap.style.display='flex'; actWrap.style.flexDirection='column'; actWrap.style.gap='10px';
+  const copyBtn = el('button','btn'); copyBtn.style.background='#2563eb'; copyBtn.style.borderColor='#2563eb';
+  copyBtn.textContent='📋 Copy Data → Google Sheets';
+  copyBtn.onclick = () => handleCopyCSV(record);
+  const newBtn = el('button','btn ghost'); newBtn.textContent='+ Inspeksi Unit Baru';
+  newBtn.onclick = resetInspForm;
+  const recBtn = el('button','btn ghost'); recBtn.textContent='📋 Lihat Record Harian';
+  recBtn.onclick = () => switchTab('record');
+  actWrap.appendChild(copyBtn); actWrap.appendChild(newBtn); actWrap.appendChild(recBtn);
+  root.appendChild(actWrap);
+
+  return root;
+}
+
+// ─────────── RENDER: RECORD TAB ───────────
+function renderRecordTab() {
+  const root = el('div');
+
+  const records = getRecords();
+
+  // Header
+  const hdr = el('div','card');
+  hdr.innerHTML=`<div class="card-title">📋 Record Inspeksi Harian</div><div style="font-size:13px;color:var(--muted)">${records.length} total inspeksi tersimpan</div>`;
+  root.appendChild(hdr);
+
+  if(records.length===0){
+    const empty = el('div','empty-state');
+    empty.innerHTML='<div class="empty-icon">📭</div><div style="font-weight:600;font-size:15px;margin-bottom:8px">Belum ada record</div><div>Selesaikan inspeksi pertama untuk melihat history di sini.</div>';
+    root.appendChild(empty);
+    return root;
+  }
+
+  // Date filter chips
+  const dates = [...new Set(records.map(r=>r.dateKey))].sort().reverse();
+  const filterBar = el('div','filter-bar');
+
+  const allChip = el('button','filter-chip'+(recordState.filterDate==='all'?' active':''));
+  allChip.textContent='Semua';
+  allChip.onclick=()=>{ recordState.filterDate='all'; render(); };
+  filterBar.appendChild(allChip);
+
+  dates.forEach(dk=>{
+    const d = new Date(dk);
+    const label = d.toLocaleDateString('id-ID',{day:'2-digit',month:'short'});
+    const chip = el('button','filter-chip'+(recordState.filterDate===dk?' active':''));
+    chip.textContent = dk===todayKey() ? '📅 Hari Ini' : label;
+    chip.onclick=()=>{ recordState.filterDate=dk; render(); };
+    filterBar.appendChild(chip);
+  });
+  root.appendChild(filterBar);
+
+  // Stats for today
+  const todayRecs = records.filter(r=>r.dateKey===todayKey());
+  if(todayRecs.length>0){
+    const statsCard = el('div','card');
+    statsCard.style.cssText='background:var(--primary);color:#fff';
+    const layakCount = todayRecs.filter(r=>r.layak==='layak').length;
+    const urgCount = todayRecs.reduce((a,r)=>a+r.urgentCount,0);
+    statsCard.innerHTML=`
+      <div style="font-weight:700;font-size:13px;color:#94a3b8;margin-bottom:10px">📊 RINGKASAN HARI INI</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center">
+        <div><div style="font-size:22px;font-weight:800">${todayRecs.length}</div><div style="font-size:11px;color:#94a3b8;margin-top:4px">Inspeksi</div></div>
+        <div><div style="font-size:22px;font-weight:800;color:#4ade80">${layakCount}</div><div style="font-size:11px;color:#94a3b8;margin-top:4px">Layak</div></div>
+        <div><div style="font-size:22px;font-weight:800;color:#f87171">${urgCount}</div><div style="font-size:11px;color:#94a3b8;margin-top:4px">Total Urgent</div></div>
+      </div>`;
+    root.appendChild(statsCard);
+  }
+
+  // Filtered list
+  const filtered = recordState.filterDate==='all' ? records : records.filter(r=>r.dateKey===recordState.filterDate);
+
+  // Group by date
+  const grouped = {};
+  filtered.forEach(r=>{ if(!grouped[r.dateKey]) grouped[r.dateKey]=[]; grouped[r.dateKey].push(r); });
+
+  Object.keys(grouped).sort().reverse().forEach(dk=>{
+    const dayRecs = grouped[dk];
+    const d = new Date(dk);
+    const dayLabel = dk===todayKey() ? '📅 Hari Ini' : d.toLocaleDateString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});
+
+    const grpHdr = el('div');
+    grpHdr.style.cssText='font-weight:700;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:16px 0 8px';
+    grpHdr.textContent=dayLabel;
+    root.appendChild(grpHdr);
+
+    dayRecs.forEach(r=>{
+      const item = el('div','record-item');
+      const isLayak = r.layak==='layak';
+
+      item.innerHTML=`
+        <div class="record-header">
+          <div>
+            <div class="record-unit">${r.unit.polisi} — ${r.unit.label}</div>
+            <div class="record-meta">${r.time} · Shift ${r.shift} · ${r.inspektor}${r.km?' · KM '+Number(r.km).toLocaleString('id-ID'):''}</div>
+          </div>
+          <span class="badge ${isLayak?'badge-layak':'badge-tidak'}">${isLayak?'✅ LAYAK':'❌ TIDAK'}</span>
+        </div>
+        <div class="record-badges">
+          <span class="badge badge-ok">✅ ${r.okCount} OK</span>
+          ${r.perhatianCount>0?`<span class="badge badge-warn">⚠️ ${r.perhatianCount} Perhatian</span>`:''}
+          ${r.urgentCount>0?`<span class="badge badge-danger">🚨 ${r.urgentCount} Urgent</span>`:''}
+        </div>`;
+
+      item.onclick = () => openRecordModal(r);
+      root.appendChild(item);
+    });
+  });
+
+  return root;
+}
+
+// ─────────── RECORD MODAL ───────────
+function openRecordModal(record) {
+  const overlay = el('div','modal-overlay');
+  overlay.onclick = e => { if(e.target===overlay) overlay.remove(); };
+
+  const sheet = el('div','modal-sheet');
+  sheet.innerHTML='<div class="modal-handle"></div>';
+
+  // Status
+  const isLayak = record.layak==='layak';
+  const titleDiv = el('div');
+  titleDiv.innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+      <div>
+        <div style="font-weight:800;font-size:16px">${record.unit.polisi}</div>
+        <div style="font-size:13px;color:var(--muted);margin-top:3px">${record.unit.label}</div>
+        <div style="font-size:12px;color:#94a3b8;margin-top:2px">${record.date} · ${record.time} · Shift ${record.shift}</div>
+        <div style="font-size:12px;color:#94a3b8">${record.inspektor}${record.km?' · KM '+Number(record.km).toLocaleString('id-ID'):''}</div>
+      </div>
+      <span class="badge ${isLayak?'badge-layak':'badge-tidak'}" style="font-size:13px;padding:4px 12px">${isLayak?'✅ LAYAK':'❌ TIDAK LAYAK'}</span>
+    </div>`;
+
+  // Summary strip
+  titleDiv.innerHTML += `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px">
+    <div style="background:#f0fdf4;border-radius:10px;padding:10px;text-align:center;border:1px solid #86efac">
+      <div style="font-size:20px;font-weight:800;color:var(--ok)">${record.okCount}</div>
+      <div style="font-size:11px;font-weight:700;color:var(--ok)">OK</div>
+    </div>
+    <div style="background:#fffbeb;border-radius:10px;padding:10px;text-align:center;border:1px solid #fcd34d">
+      <div style="font-size:20px;font-weight:800;color:var(--warn)">${record.perhatianCount}</div>
+      <div style="font-size:11px;font-weight:700;color:var(--warn)">PERHATIAN</div>
+    </div>
+    <div style="background:#fef2f2;border-radius:10px;padding:10px;text-align:center;border:1px solid #fca5a5">
+      <div style="font-size:20px;font-weight:800;color:var(--danger)">${record.urgentCount}</div>
+      <div style="font-size:11px;font-weight:700;color:var(--danger)">URGENT</div>
+    </div>
+  </div>`;
+  sheet.appendChild(titleDiv);
+
+  // Urgent
+  if(record.urgentCount>0){
+    const uc = el('div');
+    uc.style.cssText='background:#fef2f2;border:1.5px solid #fca5a5;border-radius:12px;padding:12px;margin-bottom:10px';
+    uc.innerHTML='<div style="font-weight:700;font-size:13px;color:var(--danger);margin-bottom:6px">🚨 Item URGENT</div>';
+    record.urgentList.forEach(l=>{ const d=el('div',null,'• '+l); d.style.cssText='font-size:13px;font-weight:600;padding:3px 0'; uc.appendChild(d); });
+    sheet.appendChild(uc);
+  }
+
+  // Perhatian
+  if(record.perhatianCount>0){
+    const pc = el('div');
+    pc.style.cssText='background:#fffbeb;border:1.5px solid #fcd34d;border-radius:12px;padding:12px;margin-bottom:10px';
+    pc.innerHTML='<div style="font-weight:700;font-size:13px;color:var(--warn);margin-bottom:6px">⚠️ Item PERHATIAN</div>';
+    record.perhatianList.forEach(l=>{ const d=el('div',null,'• '+l); d.style.cssText='font-size:13px;font-weight:600;padding:3px 0'; pc.appendChild(d); });
+    sheet.appendChild(pc);
+  }
+
+  // Full list (collapsed by default)
+  const detailToggle = el('button','btn ghost small'); detailToggle.textContent='Lihat Semua Item ▼';
+  detailToggle.style.marginBottom='10px';
+  let detailOpen = false;
+  const detailWrap = el('div'); detailWrap.style.display='none';
+
+  CHECKLIST.forEach(cat=>{
+    const catWrap = el('div'); catWrap.style.marginBottom='12px';
+    catWrap.innerHTML=`<div style="font-weight:700;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">${cat.icon} ${cat.label}</div>`;
+    cat.items.forEach(item=>{
+      const val = record.results[item.id];
+      const cfg = val ? STATUS_CFG[val] : null;
+      const row = el('div'); row.style.cssText='display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #f1f5f9';
+      const left = el('span',null,item.label); left.style.cssText='font-size:13px;color:#334155';
+      const right = el('span');
+      if(cfg){ right.textContent=(val==='OK'?'✅ ':'⚠️ ')+val; right.style.cssText=`font-size:11px;font-weight:700;color:${cfg.color};background:${cfg.bg};padding:2px 8px;border-radius:10px;border:1px solid ${cfg.border}`; }
+      else { right.textContent='—'; right.style.color='#cbd5e1'; }
+      row.appendChild(left); row.appendChild(right);
+      catWrap.appendChild(row);
+    });
+    detailWrap.appendChild(catWrap);
+  });
+
+  detailToggle.onclick=()=>{
+    detailOpen=!detailOpen;
+    detailWrap.style.display=detailOpen?'block':'none';
+    detailToggle.textContent=detailOpen?'Sembunyikan Detail ▲':'Lihat Semua Item ▼';
+  };
+  sheet.appendChild(detailToggle);
+  sheet.appendChild(detailWrap);
+
+  // Actions
+  const acts = el('div'); acts.style.cssText='display:flex;flex-direction:column;gap:8px;margin-top:4px';
+  const copyBtn = el('button','btn'); copyBtn.style.cssText='background:#2563eb;border-color:#2563eb';
+  copyBtn.textContent='📋 Copy ke Google Sheets';
+  copyBtn.onclick=()=>handleCopyCSV(record);
+  const delBtn = el('button','btn danger'); delBtn.textContent='🗑 Hapus Record Ini';
+  delBtn.onclick=()=>{
+    if(confirm(`Hapus record inspeksi ${record.unit.polisi} pada ${record.date}?`)){
+      deleteRecord(record.id);
+      overlay.remove();
+      render();
+    }
+  };
+  const closeBtn2 = el('button','btn ghost'); closeBtn2.textContent='Tutup';
+  closeBtn2.onclick=()=>overlay.remove();
+  acts.appendChild(copyBtn); acts.appendChild(delBtn); acts.appendChild(closeBtn2);
+  sheet.appendChild(acts);
+
+  overlay.appendChild(sheet);
+  document.body.appendChild(overlay);
+}
+
+// ─────────── MAIN RENDER ───────────
+const app = document.getElementById('app');
+const topDate = document.getElementById('top-date');
+const topTime = document.getElementById('top-time');
+topDate.textContent = today();
+topTime.textContent = nowTime();
+
+function render() {
+  app.innerHTML='';
+  if(activeTab==='inspeksi'){
+    if(inspState.step==='select') app.appendChild(renderSelect());
+    else if(inspState.step==='form') app.appendChild(renderForm());
+    else if(inspState.step==='result') app.appendChild(renderResult());
+  } else {
+    app.appendChild(renderRecordTab());
+  }
+}
+
+render();
+setInterval(()=>{ topTime.textContent=nowTime(); }, 60000);
+</script>
+</body>
+</html>
